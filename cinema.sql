@@ -50,3 +50,68 @@ CREATE TABLE passage(
        place INT UNSIGNED,
        CONSTRAINT primary_key_id_resermation_place PRIMARY KEY (id_reservation, place)
 );
+
+
+DROP FUNCTION IF EXISTS check_free_place
+;
+
+DELIMITER $
+
+CREATE FUNCTION check_free_place(
+       in_id_seance INT UNSIGNED,
+       in_place INT UNSIGNED
+)
+RETURNS BOOLEAN
+READS SQL DATA
+BEGIN
+
+        DECLARE v_check INT UNSIGNED;
+        DECLARE v_seance_capacity INT UNSIGNED;
+        DECLARE v_res BOOLEAN DEFAULT FALSE;
+
+        DECLARE CONTINUE HANDLER
+        FOR NOT FOUND
+        SET v_res = TRUE
+        ;
+
+        /* seance check on exists */
+        BEGIN 
+                DECLARE EXIT HANDLER
+                FOR NOT FOUND
+                SIGNAL SQLSTATE '42000'
+                SET MESSAGE_TEXT = 'Seance isn`t exists'
+                ;
+
+                SELECT id
+                INTO v_check
+                FROM seance
+                WHERE seance.id = in_id_seance
+                ;
+
+        END;
+
+        IF in_place < 1 THEN
+           SIGNAL SQLSTATE '42000'
+           SET MESSAGE_TEXT = 'Place can`t be 0'
+           ;
+        END IF;
+
+        SELECT passage.place, salle.capacity
+        INTO v_check, v_seance_capacity
+        FROM passage, reservation, seance, salle
+        WHERE passage.id_reservation = reservation.id
+        AND reservation.id_seance = seance.id
+        AND seance.id_salle = salle.id
+        AND passage.place = in_place
+        ;
+
+        IF in_place > v_seance_capacity THEN
+           SIGNAL SQLSTATE '42000'
+           SET MESSAGE_TEXT = 'Place can`t be greater that capacity of the salle'
+           ;
+        END IF;
+
+        RETURN v_res;
+END;
+$
+DELIMITER ;
