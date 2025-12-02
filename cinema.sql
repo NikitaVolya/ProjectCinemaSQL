@@ -20,13 +20,14 @@ CREATE TABLE salle(
        capacity INT UNSIGNED NOT NULL,
        type SET('3D', 'IMAX', '4DX', 'STANDART') NOT NULL,
        CONSTRAINT primary_key_id PRIMARY KEY (id),
-       CONSTRAINT fk_id_cinema FOREIGN KEY (id_cinema) REFERENCES cinema(id)
+       CONSTRAINT fk_id_cinema FOREIGN KEY (id_cinema) REFERENCES cinema(id),
+       CONSTRAINT unique_id_cinema_name UNIQUE (id_cinema, name)
 );
 
 CREATE TABLE seance(
        id INT UNSIGNED AUTO_INCREMENT,
        id_salle INT UNSIGNED NOT NULL,
-       id_movie INT UNSIGNED NOT NULL, # Add foreign key in future
+       id_movie INT UNSIGNED, # Add foreign key in the future
        start_time DATETIME NOT NULL,
        end_time DATETIME NOT NULL,
        price DECIMAL (5, 2) NOT NULL,
@@ -40,78 +41,15 @@ CREATE TABLE seance(
 CREATE TABLE reservation(
        id INT UNSIGNED AUTO_INCREMENT,
        id_seance INT UNSIGNED NOT NULL,
-       id_user INT UNSIGNED,
+       id_user INT UNSIGNED, # Add foreign key in the future
        CONSTRAINT primary_key_id PRIMARY KEY (id),
        CONSTRAINT fk_id_seance FOREIGN KEY (id_seance) REFERENCES seance(id)
 );
 
 CREATE TABLE passage(
        id_reservation INT UNSIGNED,
-       place INT UNSIGNED,
-       CONSTRAINT primary_key_id_resermation_place PRIMARY KEY (id_reservation, place)
+       seat INT UNSIGNED,
+       CONSTRAINT primary_key_id_resermation_place PRIMARY KEY (id_reservation, seat)
 );
 
 
-DROP FUNCTION IF EXISTS check_free_place
-;
-
-DELIMITER $
-
-CREATE FUNCTION check_free_place(
-       in_id_seance INT UNSIGNED,
-       in_place INT UNSIGNED
-)
-RETURNS BOOLEAN
-READS SQL DATA
-BEGIN
-
-        DECLARE v_check INT UNSIGNED;
-        DECLARE v_seance_capacity INT UNSIGNED;
-        DECLARE v_res BOOLEAN DEFAULT FALSE;
-
-        DECLARE CONTINUE HANDLER
-        FOR NOT FOUND
-        SET v_res = TRUE
-        ;
-
-        /* seance check on exists */
-        BEGIN 
-                DECLARE EXIT HANDLER
-                FOR NOT FOUND
-                SIGNAL SQLSTATE '42000'
-                SET MESSAGE_TEXT = 'Seance isn`t exists'
-                ;
-
-                SELECT id
-                INTO v_check
-                FROM seance
-                WHERE seance.id = in_id_seance
-                ;
-
-        END;
-
-        IF in_place < 1 THEN
-           SIGNAL SQLSTATE '42000'
-           SET MESSAGE_TEXT = 'Place can`t be 0'
-           ;
-        END IF;
-
-        SELECT passage.place, salle.capacity
-        INTO v_check, v_seance_capacity
-        FROM passage, reservation, seance, salle
-        WHERE passage.id_reservation = reservation.id
-        AND reservation.id_seance = seance.id
-        AND seance.id_salle = salle.id
-        AND passage.place = in_place
-        ;
-
-        IF in_place > v_seance_capacity THEN
-           SIGNAL SQLSTATE '42000'
-           SET MESSAGE_TEXT = 'Place can`t be greater that capacity of the salle'
-           ;
-        END IF;
-
-        RETURN v_res;
-END;
-$
-DELIMITER ;
