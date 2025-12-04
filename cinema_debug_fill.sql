@@ -1,5 +1,5 @@
 source cinema.sql
-source cinema_functions.sql
+
 
 INSERT INTO cinema (name, city, address_name, address_number) VALUES
 ('MegaCinema Center', 'Paris', 'Boulevard Lumiere', 12),
