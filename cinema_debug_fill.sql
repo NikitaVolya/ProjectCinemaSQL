@@ -92,7 +92,10 @@ INSERT INTO seance (id_salle, start_time, end_time, price, type) VALUES
 DROP PROCEDURE IF EXISTS create_random_reservation
 ;
 
-
+/*
+   Create random reservation on seance in_id_seance with 
+   in_seats_nb random seats on seanse
+*/
 DELIMITER $
 CREATE PROCEDURE create_random_reservation(
        IN in_id_seance INT UNSIGNED,
@@ -162,6 +165,10 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS fill_seance
 ;
 
+/*
+   Reserve in_nb_seats with random number of reservation
+   on seance with id in_id_seance
+*/
 DELIMITER $
 CREATE PROCEDURE fill_seance(
        IN in_id_seance INT UNSIGNED,
@@ -194,7 +201,9 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS fill_seances
 ;
 
-
+/*
+   Fille all seance seats with in_fille_procentage beetwen 0 and 100
+*/
 DELIMITER $
 CREATE PROCEDURE fill_seances(
        IN in_fill_procentage INT UNSIGNED

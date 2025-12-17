@@ -5,6 +5,12 @@ DROP FUNCTION IF EXISTS is_seat_available
 
 DELIMITER $
 
+/*
+        Return if seat is available on seance
+
+        In in_id_seance - Seance id to check seat
+        In in_seat - Seat number
+*/
 CREATE FUNCTION is_seat_available(
        in_id_seance INT UNSIGNED,
        in_seat INT UNSIGNED
@@ -75,6 +81,11 @@ DELIMITER ;
 DROP FUNCTION IF EXISTS count_reserved_seats
 ;
 
+/*
+        Count number of seats reserved on seance
+
+        In in_id_seance - Seance id to check
+*/
 DELIMITER $
 CREATE FUNCTION count_reserved_seats(
        in_id_seance INT UNSIGNED
@@ -106,6 +117,11 @@ DELIMITER ;
 DROP FUNCTION IF EXISTS count_available_seats
 ;
 
+/*
+        Count number of seats available on seance
+
+        In in_id_seance - Seance id to check
+*/
 DELIMITER $
 CREATE FUNCTION count_available_seats(
        in_id_seance INT UNSIGNED
@@ -135,6 +151,10 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS seance_info
 ;
 
+/*
+        Output info for seance id | available seats | reserved seats | seance capacity
+        In in_id_seance - Seance id to output information
+*/
 DELIMITER $
 CREATE PROCEDURE seance_info(
      IN in_id_seance INT UNSIGNED
