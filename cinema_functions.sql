@@ -131,3 +131,28 @@ BEGIN
 END;
 $
 DELIMITER ;
+
+DROP PROCEDURE IF EXISTS seance_info
+;
+
+DELIMITER $
+CREATE PROCEDURE seance_info(
+     IN in_id_seance INT UNSIGNED
+)
+BEGIN
+        DECLARE EXIT HANDLER
+        FOR NOT FOUND
+        SIGNAL SQLSTATE '42000'
+        SET MESSAGE_TEXT = 'Seance is not exists'
+        ;
+
+        SELECT seance.id,
+        count_available_seats(in_id_seance) AS available_seats,
+        count_reserved_seats(in_id_seance) AS reserved_seats,
+        salle.capacity
+        FROM seance, salle
+        WHERE seance.id_salle = salle.id
+        AND seance.id = in_id_seance;
+END;
+$
+DELIMITER ;
