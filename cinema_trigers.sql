@@ -1,5 +1,5 @@
 
-DROP TRIGGER IF EXISTS p_check_passage_seat;
+DROP PROCEDURE IF EXISTS p_check_passage_seat;
 
 DELIMITER $
 CREATE PROCEDURE p_check_passage_seat(
