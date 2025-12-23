@@ -104,9 +104,21 @@ DELIMITER $
 CREATE TRIGGER t_bf_ins_seance
 BEFORE INSERT
 ON seance FOR EACH ROW
-CALL p_check_seance_type(NEW.type, NEW.id_salle);
+BEGIN
+        /* Validate that the seance type matches the salle configuration */
+        CALL p_check_seance_type(NEW.type, NEW.id_salle);
+
+        /* Check on time */
+        IF check_on_seance_in_datetime(NEW.id_salle, NEW.start_time, NEW.end_time) THEN
+           SIGNAL SQLSTATE '45000'
+           SET MESSAGE_TEXT = 'Seance in this time already exists'
+           ;
+        END IF;
+
+END;
 $
 DELIMITER ;
+
 
 DROP TRIGGER IF EXISTS t_bf_up_seance;
 
@@ -114,6 +126,46 @@ DELIMITER $
 CREATE TRIGGER t_bf_up_seance
 BEFORE UPDATE
 ON seance FOR EACH ROW
-CALL p_check_seance_type(NEW.type, NEW.id_salle);
+BEGIN
+        /* Validate that the seance type matches the salle configuration */
+        CALL p_check_seance_type(NEW.type, NEW.id_salle);
+
+        /* Check on time if new salle */
+        IF NEW.id_salle <> OLD.id_salle THEN
+           IF check_on_seance_in_datetime(NEW.id_salle, NEW.start_time, NEW.end_time) THEN
+              SIGNAL SQLSTATE '45000'
+              SET MESSAGE_TEXT = 'Seance in this time in new salle already exists'
+              ;
+           END IF;
+        ELSE
+           /* Check on new time */
+           IF NEW.start_time <> OLD.start_time AND NEW.end_time <> OLD.end_time THEN
+
+              IF check_on_seance_in_datetime(NEW.id_salle, NEW.start_time, NEW.end_time) THEN
+                 SIGNAL SQLSTATE '45000'
+                 SET MESSAGE_TEXT = 'Seance in this time in new salle already exists'
+                 ;
+              END IF;
+              
+           ELSE
+              /* Check on new start time */
+              IF NEW.start_time < OLD.start_time AND
+              check_on_seance_in_datetime(NEW.id_salle, NEW.start_time, OLD.start_time) THEN
+                 SIGNAL SQLSTATE '45000'
+                 SET MESSAGE_TEXT = 'The new start time overlaps with an existing seance in this salle';
+              END IF;
+
+              /* Check on new end time */
+              IF NEW.end_time > OLD.end_time AND
+              check_on_seance_in_datetime(NEW.id_salle, OLD.end_time, NEW.end_time) THEN
+                 SIGNAL SQLSTATE '45000'
+                 SET MESSAGE_TEXT = 'The new end time overlaps with an existing seance in this salle';
+              END IF;
+           
+           END IF;
+           
+        END IF;
+
+END;
 $
 DELIMITER ;
