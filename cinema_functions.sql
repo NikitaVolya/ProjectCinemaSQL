@@ -176,3 +176,52 @@ BEGIN
 END;
 $
 DELIMITER ;
+
+
+DROP FUNCTION IF EXISTS check_on_seance_in_datetime;
+DELIMITER $
+CREATE FUNCTION check_on_seance_in_datetime(
+       in_id_salle INT UNSIGNED,
+       in_time_begin DATETIME,
+       in_time_end DATETIME
+)
+RETURNS BOOLEAN
+READS SQL DATA
+BEGIN
+        DECLARE v_finded_seances INT UNSIGNED;
+        DECLARE v_check INT UNSIGNED;
+
+        DECLARE EXIT HANDLER
+        FOR NOT FOUND
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Salle is not exists';
+
+        SELECT id
+        INTO v_check
+        FROM salle
+        WHERE salle.id = in_id_salle
+        ;
+
+        IF in_time_begin > in_time_end THEN
+           SIGNAL SQLSTATE '45000'
+           SET MESSAGE_TEXT = 'Time borders are not valides'
+           ;
+        END IF;
+
+        SET v_finded_seances = (SELECT COUNT(seance.id)
+                                 FROM seance
+                                 WHERE (seance.id_salle = in_id_salle
+                                 AND ((in_time_begin BETWEEN seance.start_time AND end_time) OR
+                                     (in_time_end BETWEEN seance.start_time AND end_time) OR
+                                     (in_time_begin <= seance.start_time AND seance.end_time <= in_time_end)))
+                               );
+
+        IF 0 < v_finded_seances THEN
+                RETURN TRUE;
+        ELSE
+                RETURN FALSE;
+        END IF;
+                          
+END;
+$
+DELIMITER ;
