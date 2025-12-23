@@ -1,0 +1,12 @@
+DROP TABLE IF EXISTS users ;
+DROP TABLE IF EXISTS subscribes ;
+
+DROP PROCEDURE IF EXISTS p_add_subscribes;
+DROP PROCEDURE IF EXISTS p_add_users;
+
+DROP FUNCTION IF EXISTS f_id_sub;
+
+
+
+
+
