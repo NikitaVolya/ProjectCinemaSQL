@@ -51,6 +51,7 @@ CREATE TABLE reservation(
 CREATE TABLE passage(
        id_reservation INT UNSIGNED,
        seat INT UNSIGNED,
+       CONSTRAINT fk_id_reservation FOREIGN KEY (id_reservation) REFERENCES reservation(id) ON DELETE CASCADE,
        CONSTRAINT primary_key_id_resermation_place PRIMARY KEY (id_reservation, seat)
 );
 
