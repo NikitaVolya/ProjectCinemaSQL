@@ -11,7 +11,7 @@ BEGIN
 
         DECLARE EXIT HANDLER
         FOR NOT FOUND
-        SIGNAL SQLSTATE '42000'
+        SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Seance or reservation is not valide';
 
         SELECT seance.id
@@ -22,8 +22,14 @@ BEGIN
         ;
 
         IF NOT is_seat_available(v_id_seance, in_seat) THEN
-           SIGNAL SQLSTATE '42000'
+           SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'seat is already reserved or not available'
+           ;
+        END IF;
+
+        IF check_seance_is_ended(v_id_seance) THEN
+           SIGNAL SQLSTATE '45000'
+           SET MESSAGE_TEXT = 'Seance already ended'
            ;
         END IF;
 END;
@@ -58,12 +64,18 @@ DROP TRIGGER IF EXISTS t_bf_ins_reservation;
 
 DELIMITER $
 CREATE TRIGGER t_bf_ins_reservation
-BEFORE UPDATE
+BEFORE INSERT
 ON reservation FOR EACH ROW
 BEGIN
 
+      IF check_seance_is_ended(NEW.id_seance) THEN
+         SIGNAL SQLSTATE '45000'
+         SET MESSAGE_TEXT = 'Seance is already ended'
+         ;
+      END IF;
+
       IF count_available_seats(NEW.id_seance) = 0 THEN
-         SIGNAL SQLSTATE '42000'
+         SIGNAL SQLSTATE '45000'
          SET MESSAGE_TEXT = 'Seance is already full'
          ;
       END IF;
@@ -71,6 +83,19 @@ END;
 $
 DELIMITER ;
 
+DROP TRIGGER IF EXISTS t_bf_up_reservation;
+
+DELIMITER $
+CREATE TRIGGER t_bf_up_reservation
+BEFORE UPDATE
+ON reservation FOR EACH ROW
+BEGIN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Reservation update is not posibile'
+        ;
+END;
+$
+DELIMITER ;
 
 
 DROP PROCEDURE IF EXISTS p_check_seance_type;
