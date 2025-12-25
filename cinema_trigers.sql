@@ -36,8 +36,6 @@ END;
 $
 DELIMITER ;
 
-
-
 DROP TRIGGER IF EXISTS t_bf_ins_passage;
 
 DELIMITER $
@@ -56,6 +54,51 @@ CREATE TRIGGER t_bf_up_passage
 BEFORE UPDATE
 ON passage FOR EACH ROW
 CALL p_check_passage_seat(NEW.id_reservation, NEW.seat);
+$
+DELIMITER ;
+
+
+DROP TRIGGER IF EXISTS t_af_del_passage;
+DELIMITER $
+CREATE TRIGGER t_af_del_passage
+AFTER DELETE
+ON passage FOR EACH ROW
+BEGIN
+        DECLARE v_id_reservation INT UNSIGNED;
+        DECLARE v_continue BOOLEAN DEFAULT TRUE;
+
+        DECLARE c_reservation CURSOR FOR
+        SELECT reservation.id
+        FROM reservation
+        LEFT JOIN passage ON passage.id_reservation = reservation.id
+        WHERE passage.seat IS NULL
+        ;
+
+        DECLARE CONTINUE HANDLER
+        FOR NOT FOUND
+        SET v_continue = FALSE;
+
+        OPEN c_reservation;
+
+        b_reservation: LOOP
+
+             FETCH c_reservation
+             INTO v_id_reservation
+             ;
+
+             IF NOT v_continue THEN
+                LEAVE b_reservation;
+             END IF;
+
+             DELETE FROM reservation
+             WHERE id = v_id_reservation
+             ;
+
+        END LOOP b_reservation;
+
+        CLOSE c_reservation;
+
+END;
 $
 DELIMITER ;
 
@@ -82,6 +125,7 @@ BEGIN
 END;
 $
 DELIMITER ;
+
 
 DROP TRIGGER IF EXISTS t_bf_up_reservation;
 
