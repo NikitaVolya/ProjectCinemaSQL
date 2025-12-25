@@ -225,3 +225,60 @@ BEGIN
 END;
 $
 DELIMITER ;
+
+
+DROP FUNCTION IF EXISTS check_seance_is_started;
+DELIMITER $
+CREATE FUNCTION check_seance_is_started(
+       in_id_seance INT UNSIGNED
+)
+RETURNS BOOLEAN
+READS SQL DATA
+BEGIN
+        DECLARE v_start_time DATETIME;
+
+        DECLARE EXIT HANDLER
+        FOR NOT FOUND
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Seance is not exists'
+        ;
+
+        SELECT start_time
+        INTO v_start_time
+        FROM seance
+        WHERE id = in_id_seance
+        ;
+
+        RETURN (v_start_time <= NOW());
+END;
+$
+DELIMITER ;
+
+
+
+DROP FUNCTION IF EXISTS check_seance_is_ended;
+DELIMITER $
+CREATE FUNCTION check_seance_is_ended(
+       in_id_seance INT UNSIGNED
+)
+RETURNS BOOLEAN
+READS SQL DATA
+BEGIN
+        DECLARE v_end_time DATETIME;
+
+        DECLARE EXIT HANDLER
+        FOR NOT FOUND
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Seance is not exists'
+        ;
+
+        SELECT end_time
+        INTO v_end_time
+        FROM seance
+        WHERE id = in_id_seance
+        ;
+
+        RETURN (v_end_time <= NOW());
+END;
+$
+DELIMITER ;
