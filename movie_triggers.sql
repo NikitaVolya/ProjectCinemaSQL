@@ -1,4 +1,11 @@
 DROP TRIGGER IF EXISTS trg_movie_runtime_insert;
+DROP TRIGGER IF EXISTS trg_movie_runtime_update;
+DROP TRIGGER IF EXISTS trg_movie_rating_insert;
+DROP TRIGGER IF EXISTS trg_actor_movie_life;
+DROP TRIGGER IF EXISTS trg_movie_rating_update;
+DROP TRIGGER IF EXISTS trg_cinema_begin;
+DROP TRIGGER IF EXISTS trg_actor_deathday_insert;
+DROP TRIGGER IF EXISTS trg_actor_deathday_update;
 
 DELIMITER $
 CREATE TRIGGER trg_movie_runtime_insert
@@ -14,7 +21,6 @@ END
 $
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS trg_movie_runtime_update;
 
 DELIMITER $
 CREATE TRIGGER trg_movie_runtime_update
@@ -30,7 +36,6 @@ END;
 $
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS trg_movie_rating_insert;
 
 DELIMITER $
 CREATE TRIGGER trg_movie_rating_insert
@@ -46,7 +51,6 @@ END;
 $
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS trg_movie_rating_update;
 
 DELIMITER $
 CREATE TRIGGER trg_movie_rating_update
@@ -62,15 +66,14 @@ END;
 $
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS trg_cinema_begin;
 
 DELIMITER $
 CREATE TRIGGER trg_cinema_begin
 BEFORE INSERT ON movie
 FOR EACH ROW
 BEGIN
-    IF NEW.release_year IS NOT NULL AND
-    NEW.release_year < 1888 THEN
+    IF NEW.release_date IS NOT NULL AND
+    NEW.release_date < 1888 THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'L''année de sortie doit étre postérieure à 1888 (année du premier film)';
     END IF;
@@ -78,7 +81,6 @@ END;
 $
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS trg_actor_deathday_insert;
 
 DELIMITER $
 CREATE TRIGGER trg_actor_deathday_insert
@@ -94,7 +96,6 @@ END;
 $
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS trg_actor_deathday_update;
 
 DELIMITER $
 CREATE TRIGGER trg_actor_deathday_update
@@ -110,23 +111,6 @@ END
 $
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS trg_diffusion_dates;
-
-DELIMITER $
-CREATE TRIGGER trg_diffusion_dates
-BEFORE INSERT ON movie_diffusion
-FOR EACH ROW
-BEGIN
-    IF NEW.end_diffusion_date IS NOT NULL AND
-    NEW.start_diffusion_date > NEW.end_diffusion_date THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'La date de fin de diffusion ne peut pas être antérieure à la date de début de diffusion';
-    END IF;
-END
-$
-DELIMITER ;
-
-DROP TRIGGER IF EXISTS trg_actor_movie_life;
 
 DELIMITER $
 CREATE TRIGGER trg_actor_movie_life
@@ -135,13 +119,13 @@ FOR EACH ROW
 BEGIN
     DECLARE actor_birthday DATETIME;
     DECLARE actor_deathday DATETIME;
-    DECLARE movie_release_year INT;
+    DECLARE movie_release_date DATE;
 
     SELECT birthday, deathday INTO actor_birthday, actor_deathday
     FROM actor
     WHERE id = NEW.actor_id;
 
-    SELECT release_year INTO movie_release_year
+    SELECT release_date INTO movie_release_date
     FROM movie
     WHERE id = NEW.movie_id;
 
@@ -149,9 +133,9 @@ BEGIN
        NEW.role IS NOT NULL AND
        NEW.role = 'Lead' AND
        actor_deathday IS NOT NULL AND
-       movie_release_year IS NOT NULL AND
-       movie_release_year BETWEEN 1000 AND 9999 AND -- Valid year range
-       movie_release_year > YEAR(actor_deathday) THEN
+       movie_release_date IS NOT NULL AND
+       movie_release_date BETWEEN 1000 AND 9999 AND
+       movie_release_date > YEAR(actor_deathday) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Un acteur décédé avant l\'année de sortie du film ne peut pas être assigné à un rôle principal';
     END IF;
