@@ -11,7 +11,10 @@ genre VARCHAR(255),
 description TEXT,
 global_rating DECIMAL(3,2),
 poster_url VARCHAR(255),
-PRIMARY KEY(id)
+PRIMARY KEY(id),
+CHECK (runtime IS NULL OR runtime > 0),
+CHECK (global_rating IS NULL OR (global_rating >= 0 AND global_rating <= 10)),
+CHECK (release_date IS NULL OR DATE(release_date) >= '1888-01-01')
 );
 
 CREATE TABLE actor (
@@ -22,7 +25,9 @@ birthday DATETIME NOT NULL,
 deathday DATETIME DEFAULT NULL,
 biography TEXT,
 photo_url VARCHAR(255),
-PRIMARY KEY(id)
+PRIMARY KEY(id),
+CHECK (deathday IS NULL OR deathday >= birthday),
+CHECK (birthday >= '1850-01-01')
 );
 
 CREATE TABLE movie_actor (

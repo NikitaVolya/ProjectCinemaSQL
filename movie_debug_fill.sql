@@ -1,4 +1,3 @@
--- Movies
 INSERT INTO movie (title, release_date, runtime, genre, description, global_rating, poster_url) VALUES
 ('Inception', '2010-07-16', '02:28:00', 'Sci-Fi',
  'A skilled thief enters dreams to steal secrets.',
@@ -20,8 +19,6 @@ INSERT INTO movie (title, release_date, runtime, genre, description, global_rati
  'A hacker discovers the truth about reality.',
  8.70, 'https://example.com/matrix.jpg');
 
-
--- Actors
 INSERT INTO actor (first_name, last_name, birthday, deathday, biography, photo_url) VALUES
 ('Leonardo', 'DiCaprio', '1974-11-11 00:00:00', NULL,
  'American actor and producer.',
@@ -55,8 +52,6 @@ INSERT INTO actor (first_name, last_name, birthday, deathday, biography, photo_u
  'American actor.',
  'https://example.com/fishburne.jpg');
 
-
--- Movie ↔ Actor
 INSERT INTO movie_actor (character_name, role, movie_id, actor_id) VALUES
 ('Dom Cobb', 'Lead', 1, 1),
 ('Arthur', 'Supporting', 1, 2),
