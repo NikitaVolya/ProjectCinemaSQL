@@ -1,0 +1,18 @@
+DELIMITER //
+
+CREATE
+EVENT IF NOT EXISTS e_date_subscribes 
+ON SCHEDULE EVERY 1 DAY 
+DO
+BEGIN
+
+UPDATE users
+SET id_sub = NULL,
+    end_sub = NULL
+WHERE end_sub = CURRENT_DATE();
+
+END;
+
+//
+
+DELIMITER ; 

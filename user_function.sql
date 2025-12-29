@@ -1,0 +1,48 @@
+DELIMITER //
+
+CREATE
+FUNCTION IF NOT EXISTS f_id_sub(
+    in_name_sub VARCHAR(255)
+)
+RETURNS INT UNSIGNED
+DETERMINISTIC
+READS SQL DATA
+
+
+BEGIN
+
+DECLARE v_id_sub INT UNSIGNED;
+
+SELECT id 
+INTO v_id_sub
+FROM subscribes
+WHERE name = in_name_sub;
+
+RETURN v_id_sub ; 
+
+END ; 
+//
+
+CREATE
+FUNCTION IF NOT EXISTS f_id_user(
+    in_name_user VARCHAR(255)
+)
+RETURNS INT UNSIGNED
+DETERMINISTIC
+READS SQL DATA
+
+BEGIN
+
+DECLARE v_id_user INT UNSIGNED;
+
+SELECT id 
+INTO v_id_user
+FROM users
+WHERE surname = in_name_user;
+
+RETURN v_id_user ; 
+
+END ; 
+//
+
+DELIMITER ; 

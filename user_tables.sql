@@ -1,14 +1,13 @@
 CREATE TABLE IF NOT EXISTS subscribes (
 id INT UNSIGNED AUTO_INCREMENT,
 name VARCHAR(255) NOT NULL,
-reduce SMALLINT(100) NOT NULL ,
+reduce TINYINT UNSIGNED NOT NULL ,
 price DECIMAL(5,2)NOT NULL,
 priority BOOLEAN DEFAULT 0,
 reserved_place BOOLEAN DEFAULT 0,
 PRIMARY KEY (id),
-CONSTRAINT chk_price CHECK (price > 0)
-
-
+CONSTRAINT chk_price CHECK (price > 0),
+CONSTRAINT unq_name UNIQUE(name)
 );
 
 
@@ -23,5 +22,7 @@ passwrd VARCHAR(255) NOT NULL,
 id_sub INT UNSIGNED DEFAULT NULL,
 end_sub DATE DEFAULT NULL,
 PRIMARY KEY (id),
-CONSTRAINT fk_id_sub_id FOREIGN KEY (id_sub) REFERENCES subscribe(id)
+CONSTRAINT fk_id_sub_id FOREIGN KEY (id_sub) REFERENCES subscribes(id),
+CONSTRAINT unq_surname UNIQUE(surname),
+CONSTRAINT unq_email UNIQUE(email)
 );
