@@ -1,7 +1,7 @@
 DELIMITER //
 
 CREATE
-FUNCTION IF NOT EXISTS f_id_sub(
+FUNCTION IF NOT EXISTS f_search_id_sub(
     in_name_sub VARCHAR(255)
 )
 RETURNS INT UNSIGNED
@@ -12,6 +12,12 @@ READS SQL DATA
 BEGIN
 
 DECLARE v_id_sub INT UNSIGNED;
+
+DECLARE EXIT HANDLER
+    FOR NOT FOUND
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'error id subscribe not found. Retry '
+        ;
 
 SELECT id 
 INTO v_id_sub
@@ -24,7 +30,7 @@ END ;
 //
 
 CREATE
-FUNCTION IF NOT EXISTS f_id_user(
+FUNCTION IF NOT EXISTS f_search_id_user(
     in_name_user VARCHAR(255)
 )
 RETURNS INT UNSIGNED
@@ -34,6 +40,12 @@ READS SQL DATA
 BEGIN
 
 DECLARE v_id_user INT UNSIGNED;
+
+DECLARE EXIT HANDLER
+    FOR NOT FOUND
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'error id users not found. Retry '
+        ;
 
 SELECT id 
 INTO v_id_user

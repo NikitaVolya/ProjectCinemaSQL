@@ -3,7 +3,8 @@ DROP TABLE IF EXISTS subscribes ;
 
 DROP PROCEDURE IF EXISTS p_add_subscribes;
 DROP PROCEDURE IF EXISTS p_add_users;
-DROP PROCEDURE IF EXISTS p_update_sub_user;
+DROP PROCEDURE IF EXISTS p_add_sub_user;
+DROP PROCEDURE IF EXISTS p_delete_sub_user;
 
 DROP FUNCTION IF EXISTS f_id_sub;
 
