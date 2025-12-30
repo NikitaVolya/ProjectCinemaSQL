@@ -67,50 +67,56 @@ INSERT INTO salle (id_cinema, name, capacity, type) VALUES
 
 
 INSERT INTO seance (id_salle, start_time, end_time, price, type) VALUES
-(1, '2025-01-10 14:00', '2025-01-10 16:00', 9.50, '3D'),
-(1, '2025-01-10 18:00', '2025-01-10 20:00', 9.50, '3D'),
+-- Salle 1 (3D)
+(1,  DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 14 HOUR,
+     DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 16 HOUR, 9.50, '3D'),
 
-(2, '2025-01-11 12:00', '2025-01-11 14:30', 14.00, 'IMAX'),
-(2, '2025-01-11 16:00', '2025-01-11 18:30', 14.00, 'IMAX'),
+(1,  DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 18 HOUR,
+     DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 20 HOUR, 9.50, '3D'),
 
-(3, '2025-01-09 10:00', '2025-01-09 12:00', 7.00, 'STANDART'),
-(3, '2025-01-09 13:00', '2025-01-09 15:00', 7.00, 'STANDART'),
+-- Salle 3 (STANDART)
+(3,  DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL 10 HOUR,
+     DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL 12 HOUR, 7.00, 'STANDART'),
 
-(4, '2025-01-12 15:00', '2025-01-12 17:00', 9.50, '3D'),
-(4, '2025-01-12 18:00', '2025-01-12 20:00', 9.50, '3D'),
+(3,  DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL 13 HOUR,
+     DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL 15 HOUR, 7.00, 'STANDART'),
 
-(5, '2025-01-08 14:30', '2025-01-08 17:00', 12.00, '4DX'),
-(5, '2025-01-08 18:00', '2025-01-08 20:30', 12.00, '4DX'),
+-- Salle 6 (STANDART)
+(6,  DATE_ADD(CURDATE(), INTERVAL 3 DAY) + INTERVAL 11 HOUR,
+     DATE_ADD(CURDATE(), INTERVAL 3 DAY) + INTERVAL 13 HOUR, 8.00, 'STANDART'),
 
-(6, '2025-01-07 11:00', '2025-01-07 13:00', 8.00, 'STANDART'),
-(6, '2025-01-07 14:00', '2025-01-07 16:00', 8.00, 'STANDART'),
+(6,  DATE_ADD(CURDATE(), INTERVAL 3 DAY) + INTERVAL 14 HOUR,
+     DATE_ADD(CURDATE(), INTERVAL 3 DAY) + INTERVAL 16 HOUR, 8.00, 'STANDART'),
 
-(7, '2025-01-10 13:00', '2025-01-10 15:30', 13.50, 'IMAX'),
-(7, '2025-01-10 17:00', '2025-01-10 19:30', 13.50, 'IMAX'),
+-- Salle 7 (IMAX)
+(7,  DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 13 HOUR,
+     DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 15 HOUR + INTERVAL 30 MINUTE, 13.50, 'IMAX'),
 
-(8, '2025-01-06 16:00', '2025-01-06 18:00', 9.50, '3D'),
-(8, '2025-01-06 19:00', '2025-01-06 21:00', 9.50, '3D'),
+(7,  DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 17 HOUR,
+     DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 19 HOUR + INTERVAL 30 MINUTE, 13.50, 'IMAX'),
 
-(9, '2025-01-05 14:00', '2025-01-05 16:00', 7.00, 'STANDART'),
-(9, '2025-01-05 18:00', '2025-01-05 20:00', 7.00, 'STANDART'),
+-- Salle 10 (4DX)
+(10, DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL 10 HOUR,
+     DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL 12 HOUR + INTERVAL 30 MINUTE, 11.00, '4DX'),
 
-(10, '2025-01-09 10:00', '2025-01-09 12:30', 11.00, '4DX'),
-(10, '2025-01-09 13:00', '2025-01-09 15:30', 11.00, '4DX'),
+(10, DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL 13 HOUR,
+     DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL 15 HOUR + INTERVAL 30 MINUTE, 11.00, '4DX'),
 
-(11, '2025-01-05 12:00', '2025-01-05 14:00', 7.50, 'STANDART'),
-(11, '2025-01-05 15:00', '2025-01-05 17:00', 7.50, 'STANDART'),
+-- Salle 12 (STANDART)
+(12, DATE_ADD(CURDATE(), INTERVAL 4 DAY) + INTERVAL 16 HOUR,
+     DATE_ADD(CURDATE(), INTERVAL 4 DAY) + INTERVAL 18 HOUR + INTERVAL 30 MINUTE, 13.00, 'STANDART'),
 
-(12, '2025-01-14 16:00', '2025-01-14 18:30', 13.00, 'IMAX'),
-(12, '2025-01-14 19:00', '2025-01-14 21:30', 13.00, 'IMAX')
-
-;
-
+(12, DATE_ADD(CURDATE(), INTERVAL 4 DAY) + INTERVAL 19 HOUR,
+     DATE_ADD(CURDATE(), INTERVAL 4 DAY) + INTERVAL 21 HOUR + INTERVAL 30 MINUTE, 13.00, 'STANDART');
 
 
 DROP PROCEDURE IF EXISTS create_random_reservation
 ;
 
-
+/*
+   Create random reservation on seance in_id_seance with 
+   in_seats_nb random seats on seanse
+*/
 DELIMITER $
 CREATE PROCEDURE create_random_reservation(
        IN in_id_seance INT UNSIGNED,
@@ -180,6 +186,10 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS fill_seance
 ;
 
+/*
+   Reserve in_nb_seats with random number of reservation
+   on seance with id in_id_seance
+*/
 DELIMITER $
 CREATE PROCEDURE fill_seance(
        IN in_id_seance INT UNSIGNED,
@@ -212,7 +222,9 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS fill_seances
 ;
 
-
+/*
+   Fille all seance seats with in_fille_procentage beetwen 0 and 100
+*/
 DELIMITER $
 CREATE PROCEDURE fill_seances(
        IN in_fill_procentage INT UNSIGNED
@@ -261,67 +273,5 @@ BEGIN
 END;
 $
 DELIMITER ;
-
-
-
-DROP PROCEDURE IF EXISTS seance_info
-;
-
-DELIMITER $
-CREATE PROCEDURE seance_info(
-     IN in_id_seance INT UNSIGNED
-)
-BEGIN
-        DECLARE v_seats_diagram VARCHAR(255) DEFAULT '';
-        DECLARE v_seance_capacity INT UNSIGNED;
-        DECLARE v_seats_iterator INT UNSIGNED DEFAULT 1;
-
-        DECLARE EXIT HANDLER
-        FOR NOT FOUND
-        SIGNAL SQLSTATE '42000'
-        SET MESSAGE_TEXT = 'Seance is not exists'
-        ;
-
-        SELECT seance.id,
-        count_available_seats(in_id_seance) AS available_seats,
-        count_reserved_seats(in_id_seance) AS reserved_seats,
-        salle.capacity
-        FROM seance, salle
-        WHERE seance.id_salle = salle.id
-        AND seance.id = in_id_seance;
-
-        SELECT salle.capacity
-        INTO v_seance_capacity
-        FROM seance, salle
-        WHERE seance.id_salle = salle.id
-        AND seance.id = in_id_seance;
-
-
-        seats_loop: LOOP
-           IF v_seats_iterator > v_seance_capacity THEN
-              LEAVE seats_loop;
-           END IF;
-
-           IF MOD(v_seats_iterator - 1, 20) = 0 THEN
-              SET v_seats_diagram = CONCAT(v_seats_diagram, '\n| ');
-           END IF;
-
-           IF is_seat_available(in_id_seance, v_seats_iterator) THEN
-              SET v_seats_diagram = CONCAT(v_seats_diagram, '.');
-           ELSE
-              SET v_seats_diagram = CONCAT(v_seats_diagram, '#');
-           END IF;
-
-           SET v_seats_iterator = v_seats_iterator + 1;
-        END LOOP;
-
-        SET v_seats_diagram = CONCAT(v_seats_diagram, '\n|\n');
-
-        SELECT v_seats_diagram;
-END;
-$
-DELIMITER ;
-
-
 
 CALL fill_seances(20);
