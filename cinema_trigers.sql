@@ -151,17 +151,48 @@ CREATE PROCEDURE p_check_seance_type(
 BEGIN
       DECLARE EXIT HANDLER
       FOR NOT FOUND
-      SIGNAL SQLSTATE '42000'
+      SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'Salle is not valide'
       ;
-
-      IF in_seance_type NOT IN (SELECT salle.type
+      IF NOT FIND_IN_SET(in_seance_type, (SELECT salle.type
                                 FROM salle
-                                WHERE salle.id = in_id_salle) THEN
+                                WHERE salle.id = in_id_salle)) THEN
          SIGNAL SQLSTATE '42000'
          SET MESSAGE_TEXT = 'Seance can not have different from salle types.'
          ;
       END IF;
+END;
+$
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS p_check_seance_movie_time;
+DELIMITER $
+CREATE PROCEDURE p_check_seance_movie_time(
+       IN in_id_movie INT UNSIGNED,
+       IN in_start_time DATETIME,
+       IN in_end_time DATETIME
+)
+BEGIN
+        DECLARE v_movie_runtime TIME;
+
+        DECLARE EXIT HANDLER
+        FOR NOT FOUND
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Movie not exists'
+        ;
+
+        SELECT runtime
+        INTO v_movie_runtime
+        FROM movie
+        WHERE movie.id = in_id_movie
+        ;
+
+        IF TIME(in_end_time - in_start_time) < v_movie_runtime THEN
+           SIGNAL SQLSTATE '45000'
+           SET MESSAGE_TEXT = 'Seance runtime can not be less than movie runtime'
+           ;
+        END IF;
 END;
 $
 DELIMITER ;
@@ -176,6 +207,9 @@ ON seance FOR EACH ROW
 BEGIN
         /* Validate that the seance type matches the salle configuration */
         CALL p_check_seance_type(NEW.type, NEW.id_salle);
+
+        /* Validate that the seance duration time is greater or equale to movie runtime */
+        CALL p_check_seance_movie_time(NEW.id_movie, NEW.start_time, NEW.end_time);
 
         /* Check on time */
         IF check_on_seance_in_datetime(NEW.id_salle, NEW.start_time, NEW.end_time) THEN
@@ -198,6 +232,9 @@ ON seance FOR EACH ROW
 BEGIN
         /* Validate that the seance type matches the salle configuration */
         CALL p_check_seance_type(NEW.type, NEW.id_salle);
+        
+        /* Validate that the seance duration time is greater or equale to movie runtime */
+        CALL p_check_seance_movie_time(NEW.id_movie, NEW.start_time, NEW.end_time);
 
         /* Check on time if new salle */
         IF NEW.id_salle <> OLD.id_salle THEN
@@ -238,3 +275,6 @@ BEGIN
 END;
 $
 DELIMITER ;
+
+
+
