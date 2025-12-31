@@ -1,22 +1,19 @@
-DROP TABLE IF EXISTS user ;
-DROP TABLE IF EXISTS subscribe ;
-
-
 
 CREATE TABLE subscribe (
-       id INT UNSIGNED ,
+       id INT UNSIGNED AUTO_INCREMENT,
        name VARCHAR(255) NOT NULL,
+       reduce TINYINT UNSIGNED NOT NULL ,
        price DECIMAL(5,2)NOT NULL,
        priority BOOLEAN DEFAULT 0,
        reserved_place BOOLEAN DEFAULT 0,
        PRIMARY KEY (id),
-       CONSTRAINT chk_price CHECK (price > 0)
+       CONSTRAINT chk_price CHECK (price > 0),
+       CONSTRAINT unq_name UNIQUE(name)
 );
 
 
-
 CREATE TABLE user (
-       id INT UNSIGNED ,
+       id INT UNSIGNED AUTO_INCREMENT,
        first_name VARCHAR(255) NOT NULL,
        last_name VARCHAR(255) NOT NULL,
        surname VARCHAR(255 )NOT NULL,
@@ -25,7 +22,7 @@ CREATE TABLE user (
        id_sub INT UNSIGNED DEFAULT NULL,
        end_sub DATE DEFAULT NULL,
        PRIMARY KEY (id),
-       CONSTRAINT fk_id_sub_id FOREIGN KEY (id_sub) REFERENCES subscribe(id)
+       CONSTRAINT fk_id_sub_id FOREIGN KEY (id_sub) REFERENCES subscribe(id),
+       CONSTRAINT unq_surname UNIQUE(surname),
+       CONSTRAINT unq_email UNIQUE(email)
 );
-
-

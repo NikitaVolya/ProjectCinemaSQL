@@ -1,5 +1,4 @@
-source user.sql
-
+source user_tables.sql
 source movie_tables.sql
 source cinema_tables.sql
 
