@@ -1,4 +1,3 @@
-source cinema.sql
 
 
 INSERT INTO cinema (name, city, address_name, address_number) VALUES

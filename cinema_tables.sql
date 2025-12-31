@@ -28,13 +28,14 @@ CREATE TABLE salle(
 CREATE TABLE seance(
        id INT UNSIGNED AUTO_INCREMENT,
        id_salle INT UNSIGNED NOT NULL,
-       id_movie INT UNSIGNED, # Add foreign key in the future
+       id_movie INT UNSIGNED NOT NULL,
        start_time DATETIME NOT NULL,
        end_time DATETIME NOT NULL,
        price DECIMAL (5, 2) NOT NULL,
        type ENUM('3D', 'IMAX', '4DX', 'STANDART') NOT NULL,
        CONSTRAINT primary_key_id PRIMARY KEY (id),
        CONSTRAINT fk_id_salle FOREIGN KEY (id_salle) REFERENCES salle(id),
+       CONSTRAINT fk_id_movie FOREIGN KEY (id_movie) REFERENCES movie(id),
        CONSTRAINT chk_start_end_time CHECK (start_time < end_time),
        CONSTRAINT chk_positive_price CHECK (0.0 < price)
 );

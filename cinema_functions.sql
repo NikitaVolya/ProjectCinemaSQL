@@ -282,3 +282,75 @@ BEGIN
 END;
 $
 DELIMITER ;
+
+
+
+DROP PROCEDURE IF EXISTS add_seance_for_movie;
+DELIMITER $
+CREATE PROCEDURE add_seance_for_movie(
+       IN in_id_salle INT UNSIGNED,
+       IN in_id_movie INT UNSIGNED,
+       IN in_commercial_time TIME,
+       IN in_start_time DATETIME,
+       IN in_price DECIMAL (5, 2),
+       IN in_type VARCHAR(255)
+)
+BEGIN
+        DECLARE v_check INT UNSIGNED;
+        DECLARE v_movie_runtime TIME;
+        DECLARE v_end_time DATETIME;
+
+        BEGIN
+                DECLARE EXIT HANDLER
+                FOR NOT FOUND
+                SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Salle is not exists'
+                ;
+
+                SELECT id
+                INTO v_check
+                FROM salle
+                WHERE salle.id = in_id_salle
+                ;
+        END;
+
+        BEGIN
+                DECLARE EXIT HANDLER
+                FOR NOT FOUND
+                SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Movie is not exists'
+                ;
+
+                SELECT movie.runtime
+                INTO v_movie_runtime
+                FROM movie
+                WHERE movie.id = in_id_movie
+                ;
+        END;
+
+        IF in_commercial_time < '00:10:00' THEN
+           SIGNAL SQLSTATE '45000'
+           SET MESSAGE_TEXT = 'Commercial time can not be less than 10 minutes'
+           ;
+        END IF;
+
+        IF in_commercial_time > '00:25:00' THEN
+           SIGNAL SQLSTATE '45000'
+           SET MESSAGE_TEXT = 'Commercial time can not be greater than 25 minutes'
+           ;
+        END IF;
+
+        SET v_end_time = DATE_ADD(in_start_time, INTERVAL ( TIME_TO_SEC(v_movie_runtime) + TIME_TO_SEC(in_commercial_time)) SECOND);
+
+        INSERT INTO seance (id_salle, id_movie, start_time, end_time, price, type)
+        VALUES (in_id_salle, in_id_movie, in_start_time, v_end_time, in_price, in_type)
+        ;
+
+        SELECT CONCAT('Seance created with id ', CAST(seance.id AS CHAR)) AS message
+        FROM seance
+        ORDER BY seance.id DESC
+        LIMIT 1
+        ;
+END;
+$
+DELIMITER ;
