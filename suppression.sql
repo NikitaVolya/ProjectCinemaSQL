@@ -20,6 +20,7 @@ DROP FUNCTION IF EXISTS f_is_seat_available;
 DROP FUNCTION IF EXISTS f_search_id_user;
 DROP FUNCTION IF EXISTS f_search_id_sub;
 
+DROP PROCEDURE IF EXISTS p_seance_info;
 DROP PROCEDURE IF EXISTS p_check_seance_movie_time;
 DROP PROCEDURE IF EXISTS p_check_seance_type;
 DROP PROCEDURE IF EXISTS p_check_passage_seat;
@@ -27,6 +28,7 @@ DROP PROCEDURE IF EXISTS p_add_seance_for_movie;
 DROP PROCEDURE IF EXISTS p_seance_info;
 DROP PROCEDURE IF EXISTS p_delete_sub_user;
 DROP PROCEDURE IF EXISTS p_add_sub_user;
+DROP PROCEDURE IF EXISTS p_authenticate_user;
 DROP PROCEDURE IF EXISTS p_add_user;
 DROP PROCEDURE IF EXISTS p_add_subscribe;
 

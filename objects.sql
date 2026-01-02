@@ -1,4 +1,6 @@
 
+SET @v_salt = 'base_de_donne';
+
 DELIMITER $
 
 /* START PROCEDURES */
@@ -40,19 +42,47 @@ CREATE PROCEDURE p_add_user(
     IN in_email VARCHAR(255) ,
     IN in_passwrd VARCHAR(255) 
 )
-
 BEGIN
+    DECLARE v_hash varchar(64);
 
-    DECLARE v_hash varchar(64) ;
-    DECLARE v_salt varchar(255);
-
-    SET v_salt = 'base_de_donne';
-
-    SET v_hash = SHA2(CONCAT(v_salt, in_passwrd), 256);
+    SET v_hash = SHA2(CONCAT(@v_salt, in_passwrd), 256);
 
     INSERT INTO user (first_name, last_name, surname, email, passwrd, id_sub, end_sub)
     VALUES (in_first_name, in_last_name, in_surname, in_email, v_hash, NULL, NULL);
     
+END;
+
+$
+DROP PROCEDURE IF EXISTS p_authenticate_user;
+CREATE PROCEDURE p_authenticate_user(
+       IN in_email VARCHAR(255),
+       IN in_password VARCHAR(255)
+)
+BEGIN
+        DECLARE v_user_hash VARCHAR(255);
+        DECLARE v_hash VARCHAR(255);
+
+        DECLARE EXIT HANDLER
+        FOR NOT FOUND
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'User not found'
+        ;
+
+        SELECT passwrd
+        INTO v_user_hash
+        FROM user
+        WHERE user.email = in_email
+        ;
+
+        SET v_hash = SHA2(CONCAT(@v_salt, in_password), 256);
+
+        IF v_user_hash <> v_hash THEN
+           SIGNAL SQLSTATE '45000'
+           SET MESSAGE_TEXT = 'Passord incorrect'
+           ;
+        ELSE
+           SELECT 'Authentication successfully' as result;
+        END IF;
 END;
 
 $
@@ -270,6 +300,50 @@ BEGIN
            SET MESSAGE_TEXT = 'Seance runtime can not be less than movie runtime'
            ;
         END IF;
+END;
+
+DROP PROCEDURE IF EXISTS seance_info
+;
+
+$
+
+CREATE PROCEDURE seance_info(
+     IN in_id_seance INT UNSIGNED
+)
+BEGIN
+        DECLARE v_seance_capacity INT UNSIGNED;
+
+        DECLARE EXIT HANDLER
+        FOR NOT FOUND
+        SIGNAL SQLSTATE '42000'
+        SET MESSAGE_TEXT = 'Seance is not exists'
+        ;
+
+        SELECT
+        f_count_available_seats(in_id_seance) AS available_seats,
+        f_count_reserved_seats(in_id_seance) AS reserved_seats,
+        salle.capacity,
+        (
+         SELECT SUM(f_reservation_price(reservation.id))
+         FROM reservation
+         WHERE id_seance = seance.id
+        ) as 'total_profit'
+        FROM seance, salle
+        WHERE seance.id_salle = salle.id
+        AND seance.id = in_id_seance
+        ;
+
+        SELECT
+        reservation.id as id_reservation,
+        reservation.id_user,
+        f_reservation_price(reservation.id) as price,
+        COUNT(passage.seat) as seats_number
+        FROM reservation, passage
+        WHERE reservation.id_seance = in_id_seance
+        AND passage.id_reservation = reservation.id
+        GROUP BY reservation.id
+        ;
+
 END;
 
 /* END PROCEDURES */
