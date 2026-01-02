@@ -69,7 +69,7 @@ BEGIN
     SET v_id_sub = f_search_id_sub(in_subscribe);
     SET v_id_user = f_search_id_user(in_surname);
 
-    UPDATE users
+    UPDATE user
     SET id_sub = v_id_sub,
         end_sub = in_end_sub
     WHERE id = v_id_user;
@@ -87,7 +87,7 @@ BEGIN
 
     SET v_id_user = f_search_id_user(in_surname);
 
-    UPDATE users
+    UPDATE user
     SET id_sub = NULL,
         end_sub = NULL
     WHERE id = v_id_user;
@@ -112,8 +112,8 @@ BEGIN
         ;
 
         SELECT seance.id,
-        count_available_seats(in_id_seance) AS available_seats,
-        count_reserved_seats(in_id_seance) AS reserved_seats,
+        f_count_available_seats(in_id_seance) AS available_seats,
+        f_count_reserved_seats(in_id_seance) AS reserved_seats,
         salle.capacity
         FROM seance, salle
         WHERE seance.id_salle = salle.id
@@ -209,13 +209,13 @@ BEGIN
         AND reservation.id = in_id_reservation
         ;
 
-        IF NOT is_seat_available(v_id_seance, in_seat) THEN
+        IF NOT f_is_seat_available(v_id_seance, in_seat) THEN
            SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'seat is already reserved or not available'
            ;
         END IF;
 
-        IF check_seance_is_ended(v_id_seance) THEN
+        IF f_check_seance_is_ended(v_id_seance) THEN
            SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'Seance already ended'
            ;
@@ -463,7 +463,7 @@ BEGIN
         WHERE seance.id = in_id_seance
         AND salle.id = seance.id_salle
         ;
-        RETURN v_seance_capacity - count_reserved_seats(in_id_seance);
+        RETURN v_seance_capacity - f_count_reserved_seats(in_id_seance);
 END;
 
 $
@@ -560,6 +560,58 @@ BEGIN
         ;
 
         RETURN (v_end_time <= NOW());
+END;
+
+DROP FUNCTION IF EXISTS f_reservation_price;
+CREATE FUNCTION f_reservation_price(
+       in_id_reservation INT UNSIGNED
+)
+RETURNS DECIMAL(3, 2)
+READS SQL DATA
+BEGIN
+        DECLARE v_seance_price DECIMAL(5, 2);
+        DECLARE v_passages_count INT UNSIGNED;
+        DECLARE v_reduce TINYINT UNSIGNED;
+
+        DECLARE EXIT HANDLER
+        FOR NOT FOUND
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Reservation is not exists';
+
+        SELECT price
+        INTO v_seance_price
+        FROM reservation, seance
+        WHERE seance.id = reservation.id_seance
+        AND reservation.id = in_id_reservation
+        ;
+
+        SELECT COUNT(passage.seat)
+        INTO v_passages_count
+        FROM passage
+        WHERE passage.id_reservation = in_id_reservation
+        ;
+
+        IF (SELECT id_user FROM reservation WHERE reservation.id = in_id_reservation) IS NULL THEN
+           RETURN v_seance_price * v_passages_count;
+        ELSE
+           BEGIN
+                DECLARE CONTINUE HANDLER
+                FOR NOT FOUND
+                SET v_reduce = 0;
+
+                SELECT subscribe.reduce
+                INTO v_reduce
+                FROM subscribe, user, reservation
+                WHERE reservation.id = in_id_reservation
+                AND user.id = reservation.id_user
+                AND subscribe.id = user.id_sub
+                AND DATE(NOW()) <= user.end_sub
+                ;
+
+                RETURN (v_seance_price - v_seance_price * v_reduce / 100) * v_passages_count;
+           END;
+        END IF;
+
 END;
 
 /* END FUNCTIONS */
