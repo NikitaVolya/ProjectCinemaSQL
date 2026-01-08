@@ -13,7 +13,7 @@ CREATE TABLE subscribe (
 );
 
 
-CREATE TABLE user (
+CREATE TABLE `user` (
        id INT UNSIGNED AUTO_INCREMENT,
        first_name VARCHAR(255) NOT NULL,
        last_name VARCHAR(255) NOT NULL,
@@ -113,7 +113,7 @@ CREATE TABLE reservation(
        id_user INT UNSIGNED,
        CONSTRAINT primary_key_id PRIMARY KEY (id),
        CONSTRAINT fk_id_seance FOREIGN KEY (id_seance) REFERENCES seance(id),
-       CONSTRAINT fk_id_user FOREIGN KEY (id_user) REFERENCES user(id)
+       CONSTRAINT fk_id_user FOREIGN KEY (id_user) REFERENCES `user`(id)
 );
 
 CREATE TABLE passage(

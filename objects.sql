@@ -9,7 +9,7 @@ CREATE PROCEDURE p_add_subscribe(
 
     IN in_name VARCHAR(255) ,
     IN in_price DECIMAL(5,2),
-    IN in_reduce SMALLINT(100),
+    IN in_reduce SMALLINT,
     IN in_priority BOOLEAN ,
     IN in_reserved_place BOOLEAN 
 )
@@ -44,18 +44,49 @@ CREATE PROCEDURE p_add_user(
 )
 BEGIN
     DECLARE v_hash varchar(64);
-
+    DECLARE v_test TINYINT UNSIGNED;
     SET v_hash = SHA2(CONCAT(@v_salt, in_passwrd), 256);
+    SET v_test = 0 ;
 
-    INSERT INTO user (first_name, last_name, surname, email, passwrd, id_sub, end_sub)
+    SELECT count(email) 
+    INTO v_test
+    FROM `user`
+    WHERE in_email = email ;
+    
+    IF (v_test = 1) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'adresse email deja utilise';
+    END IF; 
+
+    SELECT count(surname)
+    INTO v_test
+    FROM `user`
+    WHERE in_surname = surname ;
+    
+    IF (v_test = 1) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'surname deja utilise';
+    END IF; 
+
+    INSERT INTO `user` (first_name, last_name, surname, email, passwrd, id_sub, end_sub)
     VALUES (in_first_name, in_last_name, in_surname, in_email, v_hash, NULL, NULL);
     
 END;
 
 $
+DROP PROCEDURE IF EXISTS p_delete_user;
+CREATE PROCEDURE p_delete_user(
+       IN in_surname VARCHAR(255)
+)
+BEGIN
+       DELETE FROM `user` 
+       WHERE surname = in_surname;
+END;
+
+$
 DROP PROCEDURE IF EXISTS p_authenticate_user;
 CREATE PROCEDURE p_authenticate_user(
-       IN in_email VARCHAR(255),
+       IN in_surname VARCHAR(255),
        IN in_password VARCHAR(255)
 )
 BEGIN
@@ -70,8 +101,8 @@ BEGIN
 
         SELECT passwrd
         INTO v_user_hash
-        FROM user
-        WHERE user.email = in_email
+        FROM `user`
+        WHERE `user`.surname = in_surname
         ;
 
         SET v_hash = SHA2(CONCAT(@v_salt, in_password), 256);
@@ -99,7 +130,7 @@ BEGIN
     SET v_id_sub = f_search_id_sub(in_subscribe);
     SET v_id_user = f_search_id_user(in_surname);
 
-    UPDATE user
+    UPDATE `user`
     SET id_sub = v_id_sub,
         end_sub = in_end_sub
     WHERE id = v_id_user;
@@ -117,7 +148,7 @@ BEGIN
 
     SET v_id_user = f_search_id_user(in_surname);
 
-    UPDATE user
+    UPDATE `user`
     SET id_sub = NULL,
         end_sub = NULL
     WHERE id = v_id_user;
@@ -889,7 +920,7 @@ ON SCHEDULE EVERY 1 DAY
 DO
 BEGIN
 
-        UPDATE users
+        UPDATE `user`
         SET id_sub = NULL,
         end_sub = NULL
         WHERE end_sub = CURRENT_DATE();
