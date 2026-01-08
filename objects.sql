@@ -847,6 +847,13 @@ CREATE TRIGGER t_bf_ins_seance
 BEFORE INSERT
 ON seance FOR EACH ROW
 BEGIN
+
+        IF NEW.start_time < NOW() THEN
+           SIGNAL SQLSTATE '45000'
+           SET MESSAGE_TEXT = 'Seance can not start in the past'
+           ;
+        END IF;
+
         /* Validate that the seance type matches the salle configuration */
         CALL p_check_seance_type(NEW.type, NEW.id_salle);
 
@@ -868,6 +875,12 @@ CREATE TRIGGER t_bf_up_seance
 BEFORE UPDATE
 ON seance FOR EACH ROW
 BEGIN
+        IF NEW.start_time < NOW() THEN
+           SIGNAL SQLSTATE '45000'
+           SET MESSAGE_TEXT = 'Seance can not start in the past'
+           ;
+        END IF;
+
         /* Validate that the seance type matches the salle configuration */
         CALL p_check_seance_type(NEW.type, NEW.id_salle);
         
@@ -912,6 +925,9 @@ BEGIN
 
 END;
 
+/* END TRIGGERS */
+/* START EVENT */
+
 $
 DROP EVENT IF EXISTS e_date_subscribes;
 
@@ -927,6 +943,21 @@ BEGIN
 
 END;
 
-/* END TRIGGERS */
+$
+
+DROP EVENT IF EXISTS e_free_seance;
+
+CREATE EVENT e_free_seance
+ON SCHEDULE EVERY 1 YEAR
+DO BEGIN
+
+        DELETE FROM seance
+        WHERE YEAR(seance.start_time) < YEAR(NOW()) - 1
+        ;
+
+END;
+
+/* END EVENT */
+
 $
 DELIMITER ; 

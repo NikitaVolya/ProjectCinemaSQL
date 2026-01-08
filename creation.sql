@@ -19,7 +19,7 @@ CREATE TABLE `user` (
        last_name VARCHAR(255) NOT NULL,
        surname VARCHAR(255 )NOT NULL,
        email VARCHAR(255) NOT NULL,
-       password VARCHAR(255) NOT NULL,
+       passwrd VARCHAR(255) NOT NULL,
        id_sub INT UNSIGNED DEFAULT NULL,
        end_sub DATE DEFAULT NULL,
        PRIMARY KEY (id),
@@ -113,14 +113,14 @@ CREATE TABLE reservation(
        id_seance INT UNSIGNED NOT NULL,
        id_user INT UNSIGNED,
        CONSTRAINT primary_key_id PRIMARY KEY (id),
-       CONSTRAINT fk_id_seance FOREIGN KEY (id_seance) REFERENCES seance(id),
-       CONSTRAINT fk_id_user FOREIGN KEY (id_user) REFERENCES `user`(id)
+       CONSTRAINT fk_id_seance FOREIGN KEY (id_seance) REFERENCES seance(id) ON DELETE CASCADE,
+       CONSTRAINT fk_id_user FOREIGN KEY (id_user) REFERENCES `user`(id) ON DELETE CASCADE
 );
 
 CREATE TABLE passage(
        id_reservation INT UNSIGNED,
        seat INT UNSIGNED,
        CONSTRAINT fk_id_reservation FOREIGN KEY (id_reservation) REFERENCES reservation(id) ON DELETE CASCADE,
-       CONSTRAINT primary_key_id_resermation_place PRIMARY KEY (id_reservation, seat)
+       CONSTRAINT primary_key_id_reservation_place PRIMARY KEY (id_reservation, seat)
 );
 /* END Cinema PART */
