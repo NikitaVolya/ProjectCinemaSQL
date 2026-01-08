@@ -25,7 +25,8 @@ CREATE TABLE `user` (
        PRIMARY KEY (id),
        CONSTRAINT fk_id_sub_id FOREIGN KEY (id_sub) REFERENCES subscribe(id),
        CONSTRAINT unq_surname UNIQUE(surname),
-       CONSTRAINT unq_email UNIQUE(email)
+       CONSTRAINT unq_email UNIQUE(email),
+       INDEX idx_surname(surname)
 );
 /* END User Part */
 
