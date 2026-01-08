@@ -114,7 +114,7 @@ CREATE TABLE reservation(
        id_user INT UNSIGNED,
        CONSTRAINT primary_key_id PRIMARY KEY (id),
        CONSTRAINT fk_id_seance FOREIGN KEY (id_seance) REFERENCES seance(id) ON DELETE CASCADE,
-       CONSTRAINT fk_id_user FOREIGN KEY (id_user) REFERENCES `user`(id) ON DELETE CASCADE
+       CONSTRAINT fk_id_user FOREIGN KEY (id_user) REFERENCES `user`(id) ON SET NULL
 );
 
 CREATE TABLE passage(
