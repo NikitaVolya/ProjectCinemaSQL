@@ -48,7 +48,7 @@ L’objectif principal de cette base de données est de permettre la gestion cen
 
 ~
 
-Nous avons séparé le projet en trois parties la première partie et la gestion du cinéma les salle et les séances faits par Nikita la deuxième partie est la gestion des films et de leur acteur fait par mark et la dernière partie est la gestion des utilisateurs de la base de données la gestion des comptes client et abonnement du cinéma fait par Gauthier.
+Nous avons séparé le projet en trois parties la première partie et la gestion du cinéma les salle et les séances faits par Nikita la deuxième partie est la gestion des films et de leur acteur fait par Mark et la dernière partie est la gestion des utilisateurs de la base de données la gestion des comptes client et abonnement du cinéma fait par Gauthier.
 
 \subsection{Brève description du fonctionnement des cinémas}
 
@@ -57,8 +57,6 @@ Nous avons séparé le projet en trois parties la première partie et la gestion
 La base de données modélise le fonctionnement global d’un réseau de cinémas, depuis la gestion des infrastructures (cinémas et salles) jusqu’à l’organisation des séances, la diffusion des films et la gestion des utilisateurs.
 
 ~
-
-Elle permet de contrôler l’ensemble des données nécessaires au bon fonctionnement d’un système de réservation et d’exploitation cinématographique.
 
 \section{Schéma global de la base de données}
 
@@ -84,104 +82,125 @@ Enfin, un film peut faire intervenir plusieurs acteurs, et un acteur peut partic
 
 \section{Description des différentes parties de la base de données}
 
+\subsection{Partie Films et Acteurs}
+
+\subsubsection{Description}
+
+Cette partie de la base de données est dédiée à la gestion du contenu culturel diffusé dans les cinémas.
+Elle regroupe les informations relatives aux films ainsi qu’aux acteurs qui y participent.
+
+~
+
+\textbf{Movie}
+
+La table \textit{movie} est l’élément central de cette partie.
+Elle stocke les informations principales d’un film (titre, date de sortie, genre, description, note globale).
+La durée du film constitue un attribut essentiel, utilisé pour garantir la cohérence temporelle des séances.
+
+~
+
+\textbf{Actor}
+
+La table \textit{actor} contient les informations biographiques des acteurs (nom, prénom, dates de naissance et de décès, biographie), indépendamment de leur participation à un film donné.
+
+~
+
+\textbf{Movie\_Actor}
+
+La table \textit{movie\_actor} assure la relation plusieurs-à-plusieurs entre les films et les acteurs.
+Elle précise le personnage interprété (\textit{character\_name}) ainsi que l’importance du rôle (\textit{role}).
+
+\subsubsection{Contraintes particulières et déclencheurs}
+
+Plusieurs contraintes et déclencheurs garantissent la cohérence historique et logique des données.
+
+~
+
+\textbf{Contraintes d’intégrité}
+\begin{itemize}
+\item la date de sortie d’un film ne peut être antérieure au 1\textsuperscript{er} janvier 1888
+\item la date de naissance d’un acteur ne peut être antérieure à l’année 1850
+\item la date de décès d’un acteur doit être nulle ou postérieure à sa date de naissance
+\item la durée d’un film doit être strictement positive et la note comprise entre 0 et 10.
+\end{itemize}
+
+~
+
+\textbf{Règle métier (déclencheur)}
+
+Un déclencheur empêche l’attribution d’un rôle principal à un acteur décédé avant l’année de sortie du film, afin d’éviter les incohérences et les erreurs de saisie.
+
 \subsection{Partie Séances et Cinémas}
 
 \subsubsection{Description}
 
-~
-
-Cette partie de la base de données permet d’organiser la diffusion des films dans les différentes salles des cinémas, tout en garantissant la cohérence temporelle des séances, la compatibilité entre les salles et les types de projection, ainsi que la gestion des réservations et des places.
-
-~
+Cette partie de la base de données permet d’organiser la diffusion des films dans les salles des cinémas, tout en garantissant la cohérence temporelle des séances, la compatibilité des types de projection et la gestion des réservations.
 
 Chaque séance est associée à une salle précise et à un film donné.
-
-~
-
-L’ensemble du système repose sur des règles strictes visant à éviter les conflits horaires, les incohérences de capacité et les réservations invalides.
+L’ensemble repose sur des règles strictes visant à éviter les conflits horaires, les incohérences de capacité et les réservations invalides.
 
 ~
 
 \textbf{Cinema}
 
-Cette table stocke les informations générales relatives aux cinémas, telles que leur nom, leur ville et leur adresse. Chaque cinéma est identifié de manière unique et peut contenir plusieurs salles.
+Cette table stocke les informations générales des cinémas (nom, ville, adresse). Chaque cinéma est identifié de manière unique et peut contenir plusieurs salles.
 
 ~
 
 \textbf{Salle}
 
-Une salle appartient obligatoirement à un seul cinéma. Elle est caractérisée par un nom, une capacité maximale et un ensemble de types de projection supportés (par exemple 3D, IMAX, 4DX). Une contrainte d’unicité empêche la création de deux salles portant le même nom au sein d’un même cinéma
+Une salle appartient obligatoirement à un seul cinéma. Elle est caractérisée par un nom, une capacité maximale et les types de projection supportés (3D, IMAX, 4DX). Une contrainte d’unicité empêche la duplication des noms de salles au sein d’un même cinéma.
 
 ~
 
 \textbf{Seance}
 
-La table des séances représente les projections des films. Chaque séance est liée à une salle et à un film, et possède une date de début, une date de fin, un prix et un type de projection. Les séances constituent l’élément central reliant les films, les salles et les réservations.
+La table \textit{seance} représente les projections des films. Chaque séance est liée à une salle et à un film, avec une date de début, une date de fin, un prix et un type de projection.
 
 ~
 
 \textbf{Reservation}
 
-Une réservation est associée à une séance donnée et peut être effectuée soit par un utilisateur enregistré, soit par un invité anonyme. Elle sert de lien entre les utilisateurs et les places réservées.
+Une réservation est associée à une séance et peut être effectuée par un utilisateur enregistré ou un invité anonyme. Elle permet de relier les utilisateurs aux places réservées.
 
 ~
 
 \textbf{Passage}
 
-Cette table représente les places réservées dans une séance. Chaque enregistrement correspond à un numéro de place associé à une réservation. Une clé primaire composée garantit qu’une même place ne peut être réservée qu’une seule fois pour une réservation donnée.
+Cette table représente les places réservées pour une séance. Une clé primaire composée garantit qu’une même place ne peut être réservée qu’une seule fois.
 
 \subsubsection{Contraintes particulières et déclencheurs}
 
-~
-
-Plusieurs contraintes et déclencheurs ont été mis en place afin d’assurer l’intégrité et la cohérence des données.
+Plusieurs contraintes et déclencheurs assurent l’intégrité et la cohérence des données.
 
 ~
 
 \textbf{Contraintes sur les séances}
-
 \begin{itemize}
-\item Une séance doit obligatoirement commencer avant sa date de fin.
-\item La durée d’une séance ne peut pas être inférieure à la durée du film projeté.
-\item Le type de la séance doit être compatible avec les types supportés par la salle.
-\item Deux séances ne peuvent pas se dérouler simultanément dans une même salle.
-\end{itemize}
-Ces règles sont vérifiées automatiquement avant l’insertion ou la modification d’une séance.
-
-~
-
-\textbf{Contraintes sur les réservations}
-
-\begin{itemize}
-\item Il est impossible de créer une réservation pour une séance déjà terminée.
-\item Une réservation ne peut être effectuée si la séance est complète.
-\item Une réservation ne peut pas être modifiée après sa création, afin d’éviter des incohérences.
+\item la date de début doit être antérieure à la date de fin ;
+\item la durée doit être au moins égale à celle du film projeté ;
+\item le type de séance doit être compatible avec la salle ;
+\item deux séances ne peuvent pas se chevaucher dans une même salle.
 \end{itemize}
 
 ~
 
-\textbf{Gestion des places}
+\textbf{Contraintes sur les réservations et les places}
 \begin{itemize}
-\item Une place ne peut être réservée que si elle est disponible pour la séance concernée.
-\item Le numéro de place doit être compris entre 1 et la capacité maximale de la salle.
-\item Deux réservations ne peuvent pas contenir la même place pour une même séance.
+\item une réservation ne peut être créée pour une séance terminée ou complète ;
+\item une place doit être disponible et comprise dans la capacité de la salle ;
+\item deux réservations ne peuvent pas contenir la même place pour une même séance.
 \end{itemize}
-
-Ces règles sont appliquées automatiquement lors de l’ajout ou de la modification des places.
 
 ~
 
-\textbf{Nettoyage automatique des réservations}
+\textbf{Nettoyage automatique}
 
-Un déclencheur est utilisé pour supprimer automatiquement une réservation lorsqu’elle ne contient plus aucune place, par exemple après la suppression de toutes les places associées.
-
-Cela permet d’éviter la présence de réservations vides dans la base de données.
+Un déclencheur supprime automatiquement une réservation lorsqu’elle ne contient plus aucune place, afin d’éviter la présence de réservations vides dans la base de données.
 
 \subsection{Partie Users}
 
 \subsubsection{Description}
-
-~
 
 Dans cette partie, les utilisateurs (ou clients) sont liés à des abonnements qui leur donnent accès à certains avantages lors de la réservation de places dans la partie cinéma.
 Les abonnements permettent notamment d’appliquer des réductions ou des priorités lors des réservations.
@@ -208,8 +227,6 @@ Elle contient un identifiant, le prénom, le nom, l’adresse e-mail, un surnom,
 \subsubsection{Contraintes particulières et déclencheurs}
 
 ~
-
-\textbf{Contraintes sur les abonnements}
 
 Une contrainte garantit que le prix d’un abonnement est strictement supérieur à zéro.
 
