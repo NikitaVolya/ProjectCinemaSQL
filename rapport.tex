@@ -1,0 +1,326 @@
+\documentclass[a4paper, 12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{vmargin}
+\setmargnohfrb{30mm}{30mm}{30mm}{30mm} %ltrb
+
+\pagestyle{plain}
+
+\title{Rapport au projet d'équipe}
+\author{Volianskyi Nikita, Gauthier Percet, Mark Melkonian}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\newpage
+
+\tableofcontents
+
+\newpage 
+
+\section{Introduction}
+
+\subsection{Context de projet}
+
+~
+
+Au cours du second semestre de la deuxième année de licence à l’Université Jean Monnet, nous avons réalisé un projet en groupe dans le cadre de l’unité d’enseignement Bases de données 2.
+
+~
+
+Ce projet devait être effectué en équipe de trois personnes et consistait à concevoir une base de données complète autour d’un thème libre, incluant la modélisation, la création des tables, les relations, les contraintes ainsi que les objets SQL avancés.
+
+\subsection{Objectif de la base de données}
+
+~
+
+Nous avons choisi comme sujet la gestion d’un réseau de cinémas.
+L’objectif principal de cette base de données est de permettre la gestion centralisée des informations liées à plusieurs cinémas situés dans différentes villes, incluant les salles, les films, les séances, les réservations ainsi que les utilisateurs du système.
+
+\subsection{Répartition du travail}
+
+~
+
+Nous avons séparé le projet en trois parties la première partie et la gestion du cinéma les salle et les séances faits par Nikita la deuxième partie est la gestion des films et de leur acteur fait par mark et la dernière partie est la gestion des utilisateurs de la base de données la gestion des comptes client et abonnement du cinéma fait par Gauthier.
+
+\subsection{Brève description du fonctionnement des cinémas}
+
+~
+
+La base de données modélise le fonctionnement global d’un réseau de cinémas, depuis la gestion des infrastructures (cinémas et salles) jusqu’à l’organisation des séances, la diffusion des films et la gestion des utilisateurs.
+
+~
+
+Elle permet de contrôler l’ensemble des données nécessaires au bon fonctionnement d’un système de réservation et d’exploitation cinématographique.
+
+\section{Schéma global de la base de données}
+
+~
+
+Le schéma global de la base de données est présenté sous forme de diagramme relationnel ci-dessous.
+
+\begin{center}
+  \includegraphics[scale=0.325]{diagram.png}
+\end{center}
+
+~
+
+La base de données est composée de plusieurs tables principales représentant les entités du domaine : cinema, salle, seance, reservation, passage, movie, actor, movie\_actor, user et subscribe.
+
+Chaque salle est obligatoirement associée à un seul cinéma.
+Chaque séance correspondant à un film et à un type compatible avec les caractéristiques de la salle.
+Deux séances ne peuvent pas avoir lieu simultanément dans une même salle, et la durée d’une séance ne peut pas être inférieure à la durée du film projeté.
+Une réservation peut être effectuée par un utilisateur enregistré ou par un invité anonyme.
+Chaque réservation contient un ensemble de places, qui ne peuvent pas se chevaucher avec celles d’autres réservations pour une même séance.
+Les utilisateurs enregistrés peuvent disposer ou non d’un abonnement, ce qui influence les conditions de leurs réservations.
+Enfin, un film peut faire intervenir plusieurs acteurs, et un acteur peut participer à plusieurs films, ce qui est modélisé par une relation plusieurs-à-plusieurs.
+
+\section{Description des différentes parties de la base de données}
+
+\subsection{Partie Séances et Cinémas}
+
+\subsubsection{Description}
+
+~
+
+Cette partie de la base de données permet d’organiser la diffusion des films dans les différentes salles des cinémas, tout en garantissant la cohérence temporelle des séances, la compatibilité entre les salles et les types de projection, ainsi que la gestion des réservations et des places.
+
+~
+
+Chaque séance est associée à une salle précise et à un film donné.
+
+~
+
+L’ensemble du système repose sur des règles strictes visant à éviter les conflits horaires, les incohérences de capacité et les réservations invalides.
+
+~
+
+\textbf{Cinema}
+
+Cette table stocke les informations générales relatives aux cinémas, telles que leur nom, leur ville et leur adresse. Chaque cinéma est identifié de manière unique et peut contenir plusieurs salles.
+
+~
+
+\textbf{Salle}
+
+Une salle appartient obligatoirement à un seul cinéma. Elle est caractérisée par un nom, une capacité maximale et un ensemble de types de projection supportés (par exemple 3D, IMAX, 4DX). Une contrainte d’unicité empêche la création de deux salles portant le même nom au sein d’un même cinéma
+
+~
+
+\textbf{Seance}
+
+La table des séances représente les projections des films. Chaque séance est liée à une salle et à un film, et possède une date de début, une date de fin, un prix et un type de projection. Les séances constituent l’élément central reliant les films, les salles et les réservations.
+
+~
+
+\textbf{Reservation}
+
+Une réservation est associée à une séance donnée et peut être effectuée soit par un utilisateur enregistré, soit par un invité anonyme. Elle sert de lien entre les utilisateurs et les places réservées.
+
+~
+
+\textbf{Passage}
+
+Cette table représente les places réservées dans une séance. Chaque enregistrement correspond à un numéro de place associé à une réservation. Une clé primaire composée garantit qu’une même place ne peut être réservée qu’une seule fois pour une réservation donnée.
+
+\subsubsection{Contraintes particulières et déclencheurs}
+
+~
+
+Plusieurs contraintes et déclencheurs ont été mis en place afin d’assurer l’intégrité et la cohérence des données.
+
+~
+
+\textbf{Contraintes sur les séances}
+
+\begin{itemize}
+\item Une séance doit obligatoirement commencer avant sa date de fin.
+\item La durée d’une séance ne peut pas être inférieure à la durée du film projeté.
+\item Le type de la séance doit être compatible avec les types supportés par la salle.
+\item Deux séances ne peuvent pas se dérouler simultanément dans une même salle.
+\end{itemize}
+Ces règles sont vérifiées automatiquement avant l’insertion ou la modification d’une séance.
+
+~
+
+\textbf{Contraintes sur les réservations}
+
+\begin{itemize}
+\item Il est impossible de créer une réservation pour une séance déjà terminée.
+\item Une réservation ne peut être effectuée si la séance est complète.
+\item Une réservation ne peut pas être modifiée après sa création, afin d’éviter des incohérences.
+\end{itemize}
+
+~
+
+\textbf{Gestion des places}
+\begin{itemize}
+\item Une place ne peut être réservée que si elle est disponible pour la séance concernée.
+\item Le numéro de place doit être compris entre 1 et la capacité maximale de la salle.
+\item Deux réservations ne peuvent pas contenir la même place pour une même séance.
+\end{itemize}
+
+Ces règles sont appliquées automatiquement lors de l’ajout ou de la modification des places.
+
+~
+
+\textbf{Nettoyage automatique des réservations}
+
+Un déclencheur est utilisé pour supprimer automatiquement une réservation lorsqu’elle ne contient plus aucune place, par exemple après la suppression de toutes les places associées.
+
+Cela permet d’éviter la présence de réservations vides dans la base de données.
+
+\subsection{Partie Users}
+
+\subsubsection{Description}
+
+~
+
+Dans cette partie, les utilisateurs (ou clients) sont liés à des abonnements qui leur donnent accès à certains avantages lors de la réservation de places dans la partie cinéma.
+Les abonnements permettent notamment d’appliquer des réductions ou des priorités lors des réservations.
+
+~
+
+\textbf{Description des tables}
+
+~
+
+\textbf{Subscribe}
+
+La table subscribe permet de regrouper l’ensemble des offres d’abonnement proposées par le cinéma. Elle contient un identifiant, le nom de l’abonnement, son prix ainsi que les avantages associés.
+
+~
+
+\textbf{User}
+
+La table user regroupe les comptes clients du site du cinéma.
+Elle contient un identifiant, le prénom, le nom, l’adresse e-mail, un surnom, l’identifiant de l’abonnement ainsi que la date de fin de l’abonnement, le cas échéant.
+
+~
+
+\subsubsection{Contraintes particulières et déclencheurs}
+
+~
+
+\textbf{Contraintes sur les abonnements}
+
+Une contrainte garantit que le prix d’un abonnement est strictement supérieur à zéro.
+
+\subsection{Partie Utilisateurs de la base (rôles et droits)}
+
+~
+
+Cette partie décrit les différents rôles définis au niveau de la base de données ainsi que les droits qui leur sont associés.
+
+~
+
+\textbf{Administrateurs}
+
+Trois comptes administrateurs, correspondant aux membres du groupe, ont été définis.
+Ces comptes disposent de l’ensemble des droits sur la base de données, incluant la création et la suppression des tables, la gestion des utilisateurs ainsi que l’attribution des droits.
+
+~
+
+\textbf{Administration générale}
+
+Un groupe d’utilisateurs représentant l’administration générale (par exemple le responsable du réseau de cinémas) a été défini.
+Ces utilisateurs disposent de tous les droits au niveau des tables, à l’exception de la création et de la suppression des tables, ainsi que de la gestion des comptes administrateurs.
+
+Ils peuvent notamment :
+\begin{itemize}
+\item créer et supprimer des comptes clients et employés ;
+\item gérer le compte du site internet ;
+\item ajouter, modifier ou supprimer des films et des séances afin de gérer les horaires.
+\end{itemize}
+
+~
+
+\textbf{Compte du site internet}
+
+Un rôle spécifique est dédié au site internet du cinéma.
+Ce compte dispose de tous les droits au niveau des tables, sauf ceux liés à la création et à la suppression des tables ainsi qu’à la gestion des utilisateurs de la base de données.
+
+Il permet notamment :
+\begin{itemize}
+\item la création, la modification et la suppression des comptes clients ;
+\item la prise et la suppression des réservations ;
+\item la gestion des abonnements des utilisateurs.
+\end{itemize}
+
+~
+
+\textbf{Employés}
+
+Un groupe de comptes employés a également été défini.
+Les employés peuvent effectuer les opérations courantes telles que la création de comptes clients, la vente de places ou la gestion des réservations.
+
+Ils disposent de tous les droits au niveau des tables nécessaires à ces opérations, à l’exception :
+\begin{itemize}
+\item de la création et de la suppression des tables ;
+\item de la gestion des utilisateurs de la base de données ;
+\item de l’attribution des droits (\textit{GRANT}).
+\end{itemize}
+
+\section{Objets de la base de données}
+
+\subsection{Procédures stockées}
+
+Plusieurs procédures stockées ont été implémentées afin d’encapsuler la logique métier principale et de sécuriser les opérations sensibles sur la base de données.
+
+\begin{itemize}
+    \item \textbf{p\_add\_subscribe} : permet d’ajouter une nouvelle offre d’abonnement après vérification de l’unicité de son nom.
+    
+    \item \textbf{p\_add\_user} : crée un compte client en vérifiant l’unicité de l’adresse e-mail et du surnom, puis en chiffrant le mot de passe.
+    
+    \item \textbf{p\_authenticate\_user} : vérifie les identifiants d’un utilisateur lors de la connexion au site web.
+    
+    \item \textbf{p\_delete\_user} : supprime un compte client à partir de son surnom.
+    
+    \item \textbf{p\_add\_sub\_user} : associe un abonnement à un utilisateur avec une date de fin définie.
+    
+    \item \textbf{p\_delete\_sub\_user} : supprime l’abonnement actif d’un utilisateur.
+    
+    \item \textbf{p\_add\_seance\_for\_movie} : crée une séance pour un film donné en calculant automatiquement l’heure de fin.
+    
+    \item \textbf{p\_seance\_info} : fournit des informations globales sur une séance (places disponibles, réservées, capacité, bénéfices).
+    
+    \item \textbf{p\_check\_passage\_seat} : vérifie la validité d’une place avant son ajout à une réservation.
+    
+    \item \textbf{p\_check\_seance\_type} : contrôle la compatibilité entre le type de séance et la salle.
+    
+    \item \textbf{p\_check\_seance\_movie\_time} : vérifie que la durée d’une séance respecte la durée du film.
+\end{itemize}
+
+\subsection{Fonctions}
+
+Les fonctions sont utilisées pour effectuer des calculs réutilisables et des vérifications logiques au sein des procédures et des déclencheurs.
+
+\begin{itemize}
+    \item \textbf{f\_search\_id\_sub} : retourne l’identifiant d’un abonnement à partir de son nom.
+    
+    \item \textbf{f\_search\_id\_user} : retourne l’identifiant d’un utilisateur à partir de son surnom.
+    
+    \item \textbf{f\_is\_seat\_available} : indique si une place est disponible pour une séance donnée.
+    
+    \item \textbf{f\_count\_reserved\_seats} : calcule le nombre de places déjà réservées pour une séance.
+    
+    \item \textbf{f\_count\_available\_seats} : calcule le nombre de places encore disponibles pour une séance.
+    
+    \item \textbf{f\_check\_on\_seance\_in\_datetime} : vérifie l’absence de conflit horaire entre les séances d’une même salle.
+    
+    \item \textbf{f\_check\_seance\_is\_started} : indique si une séance a déjà commencé.
+    
+    \item \textbf{f\_check\_seance\_is\_ended} : indique si une séance est terminée.
+    
+    \item \textbf{f\_reservation\_price} : calcule le prix total d’une réservation en tenant compte des abonnements.
+\end{itemize}
+
+
+\end{document}
