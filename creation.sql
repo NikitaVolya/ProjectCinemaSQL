@@ -34,8 +34,8 @@ CREATE TABLE `user` (
 CREATE TABLE movie (
        id INT UNSIGNED AUTO_INCREMENT,
        title VARCHAR(255) NOT NULL,
-       release_date DATE,
-       runtime TIME,
+       release_date DATE NOT NULL,
+       runtime TIME NOT NULL,
        genre VARCHAR(255),
        description TEXT,
        global_rating DECIMAL(3,2),
