@@ -1,6 +1,4 @@
- source suppression.sql
- source creation.sql
- source objects.sql
+
 
 INSERT INTO movie (title, release_date, runtime, genre, description, global_rating, poster_url) VALUES
 ('Inception', '2010-07-16', '02:28:00', 'Sci-Fi',
